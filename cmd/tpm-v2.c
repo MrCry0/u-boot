@@ -6,8 +6,10 @@
 
 #include <common.h>
 #include <command.h>
+#include <display_options.h>
 #include <dm.h>
 #include <log.h>
+#include <malloc.h>
 #include <mapmem.h>
 #include <tpm-common.h>
 #include <tpm-v2.h>
@@ -206,6 +208,37 @@ unmap_data:
 	return report_return_code(rc);
 }
 
+static int do_tpm2_get_random(struct cmd_tbl *cmdtp, int flag, int argc,
+			      char *const argv[])
+{
+	struct udevice *dev;
+	char *buffer;
+	u32 len;
+	int ret;
+
+	ret = get_tpm(&dev);
+	if (ret) {
+		printf("Can't get tpm\n");
+		return ret;
+	}
+
+	if (argc != 2)
+		return CMD_RET_USAGE;
+
+	len = simple_strtoul(argv[1], NULL, 10);
+	buffer = calloc(1, len);
+	if (!buffer)
+		return -ENOMEM;
+
+	ret = tpm2_get_random(dev, buffer, len);
+	if (!ret)
+		print_buffer(0, buffer, 1, len, 0);
+
+	free(buffer);
+
+	return report_return_code(ret);
+}
+
 static int do_tpm_dam_reset(struct cmd_tbl *cmdtp, int flag, int argc,
 			    char *const argv[])
 {
@@ -366,6 +399,7 @@ static struct cmd_tbl tpm2_commands[] = {
 	U_BOOT_CMD_MKENT(pcr_extend, 0, 1, do_tpm2_pcr_extend, "", ""),
 	U_BOOT_CMD_MKENT(pcr_read, 0, 1, do_tpm_pcr_read, "", ""),
 	U_BOOT_CMD_MKENT(get_capability, 0, 1, do_tpm_get_capability, "", ""),
+	U_BOOT_CMD_MKENT(get_random, 0, 1, do_tpm2_get_random, "", ""),
 	U_BOOT_CMD_MKENT(dam_reset, 0, 1, do_tpm_dam_reset, "", ""),
 	U_BOOT_CMD_MKENT(dam_parameters, 0, 1, do_tpm_dam_parameters, "", ""),
 	U_BOOT_CMD_MKENT(change_auth, 0, 1, do_tpm_change_auth, "", ""),
@@ -421,6 +455,8 @@ U_BOOT_CMD(tpm2, CONFIG_SYS_MAXARGS, 1, do_tpm, "Issue a TPMv2.x command",
 "    <property>: property\n"
 "    <addr>: address to store <count> entries of 4 bytes\n"
 "    <count>: number of entries to retrieve\n"
+"get_random <len>\n"
+"    Get <len> random bytes.\n"
 "dam_reset [<password>]\n"
 "    If the TPM is not in a LOCKOUT state, reset the internal error counter.\n"
 "    <password>: optional password\n"
