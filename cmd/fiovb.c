@@ -10,6 +10,7 @@
 #include <malloc.h>
 #include <mmc.h>
 #include <fiovb.h>
+#include <asm/arch/sys_proto.h>
 
 static struct fiovb_ops *fiovb_ops;
 
@@ -19,6 +20,9 @@ int do_fiovb_init(struct cmd_tbl *cmdtp, int flag, int argc, char * const argv[]
 
 	if (argc != 2)
 		return CMD_RET_USAGE;
+
+	if (!boot_mode_is_closed())
+		return CMD_RET_FAILURE;
 
 	mmc_dev = simple_strtoul(argv[1], NULL, 16);
 
