@@ -166,6 +166,10 @@ config SPL_FIT_SIGNATURE
 	select SPL_IMAGE_SIGN_INFO
 	select SPL_FIT_FULL_CHECK
 
+config SPL_FIT_SIGNATURE_STRICT
+	bool "Halt if loadables or firmware don't pass FIT signature verification"
+	select SPL_FIT_SIGNATURE
+
 config SPL_LOAD_FIT
 	bool "Enable SPL loading U-Boot as a FIT (basic fitImage features)"
 	select SPL_FIT
