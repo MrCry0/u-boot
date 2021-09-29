@@ -250,6 +250,9 @@
 #if defined(CONFIG_DM_VIDEO)
 #define CONFIG_VIDEO_LINK
 #endif
+#else /* for SPL_BUILD disable these subsystems */
+#undef CONFIG_MODULE_FUSE
+#undef CONFIG_OF_SYSTEM_SETUP
 #endif
 
 #endif
