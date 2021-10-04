@@ -1026,3 +1026,11 @@ ulong bootcount_load(void)
 	return 0;
 }
 #endif
+
+/**
+ * Weak default function for board-specific reset. Provide empty stub only.
+ */
+__weak void reset_cpu(void)
+{
+	/* Nothing to do! */
+}
