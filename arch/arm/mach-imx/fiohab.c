@@ -192,6 +192,7 @@ static int hab_status(void)
 		       HAB_SUCCESS) {
 			if (!is_known_rng_fail_event(event_data, bytes)) {
 				printf("HAB events active error\n");
+				printf("Make sure the SPL is correctly signed and the board is fused\n");
 				return 1;
 			}
 		}
@@ -200,6 +201,7 @@ static int hab_status(void)
 		return 0;
 #else
 		printf("HAB events active error\n");
+		printf("Make sure the SPL is correctly signed and the board is fused\n");
 		return 1;
 #endif
 	}
