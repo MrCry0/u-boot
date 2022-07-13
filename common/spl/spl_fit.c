@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <fpga.h>
 #include <gzip.h>
+#include <hang.h>
 #include <image.h>
 #include <log.h>
 #include <malloc.h>
