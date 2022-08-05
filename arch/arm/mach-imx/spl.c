@@ -180,7 +180,7 @@ u32 spl_boot_device(void)
 
 	return spl_board_boot_device(boot_device_spl);
 }
-#endif /* CONFIG_MX7 || CONFIG_MX7ULP || CONFIG_IMX8M || CONFIG_IMX8 */
+#endif /* CONFIG_MX7 || CONFIG_MX7ULP || CONFIG_IMX8M || CONFIG_IMX8 || CONFIG_IMX9 */
 
 #ifdef CONFIG_SPL_USB_GADGET
 int g_dnl_bind_fixup(struct usb_device_descriptor *dev, const char *name)
