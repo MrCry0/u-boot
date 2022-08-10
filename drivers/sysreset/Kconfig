@@ -157,6 +157,12 @@ config SYSRESET_WATCHDOG
 	help
 	  Reboot support for generic watchdog reset.
 
+config SPL_SYSRESET_WATCHDOG
+	bool "Enable support for watchdog reboot driver in SPL mode"
+	select SPL_WDT
+	help
+	  Reboot support for generic watchdog reset in SPL mode.
+
 config SYSRESET_WATCHDOG_AUTO
 	bool "Automatically register first watchdog with sysreset"
 	depends on SYSRESET_WATCHDOG
