@@ -3,6 +3,8 @@
  * Copyright 2019 NXP
  */
 
+#define DEBUG
+
 #include <common.h>
 #include <command.h>
 #include <cpu_func.h>

@@ -16,6 +16,7 @@
  * Parts of the implementation are based on f_dfu and f_thor.
  */
 
+#define DEBUG
 #include <errno.h>
 #include <common.h>
 #include <console.h>
@@ -927,8 +928,10 @@ int spl_sdp_handle(int controller_index, struct spl_image_info *spl_image)
 			return -EINVAL;
 		}
 
-		if (flag == SDP_EXIT)
+		if (flag == SDP_EXIT) {
+			debug("%s: SDP_EXIT!\n", __func__);
 			return 0;
+		}
 
 		WATCHDOG_RESET();
 		usb_gadget_handle_interrupts(controller_index);
