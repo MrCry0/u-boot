@@ -1501,17 +1501,24 @@ int usb_composite_register(struct usb_composite_driver *driver)
 {
 	int res;
 
-	if (!driver || !driver->dev || !driver->bind || composite)
+	debug("%s: %s()\n", __FILE__, __func__);
+	if (!driver || !driver->dev || !driver->bind || composite) {
+		debug("%s: %s(): 0x%lx 0x%lx 0x%lx 0x%lx\n",
+		      __FILE__, __func__,
+		      (unsigned long) driver, (unsigned long) driver->dev,
+		      (unsigned long) driver->bind, (unsigned long) composite);
 		return -EINVAL;
+	}
 
 	if (!driver->name)
 		driver->name = "composite";
 	composite = driver;
 
 	res = usb_gadget_register_driver(&composite_driver);
-	if (res != 0)
+	if (res != 0) {
+		debug("%s: %s(): usb_gadget_register_driver() = %d\n", __FILE__, __func__, res);
 		composite = NULL;
-
+	}
 	return res;
 }
 
