@@ -42,6 +42,7 @@ static inline const struct fdt_reserve_entry *fdt_mem_rsv_(const void *fdt, int 
 		(const struct fdt_reserve_entry *)
 		((const char *)fdt + fdt_off_mem_rsvmap(fdt));
 
+	printf("%s: rt=%lx\n", __func__, rsv_table);
 	return rsv_table + n;
 }
 static inline struct fdt_reserve_entry *fdt_mem_rsv_w_(void *fdt, int n)

@@ -4,6 +4,8 @@
  * Written by Simon Glass <sjg@chromium.org>
  */
 
+// #define DEBUG 1
+
 #include <common.h>
 #include <errno.h>
 #include <fpga.h>

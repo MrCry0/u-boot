@@ -4,6 +4,7 @@
  * Bryan O'Donoghue <bryan.odonoghue@linaro.org>
  */
 
+// #define DEBUG 1
 #include <common.h>
 #include <fdtdec.h>
 #include <image.h>

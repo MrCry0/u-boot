@@ -4,6 +4,7 @@
  * Copyright 2017 NXP
  */
 
+// #define DEBUG 1
 #include <init.h>
 #include <asm/arch/clock.h>
 #include <asm/arch/iomux.h>

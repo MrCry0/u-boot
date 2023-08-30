@@ -3,6 +3,7 @@
  * Copyright 2020 Foundries.io
  */
 
+//#define DEBUG 1
 #include <common.h>
 #include <spl.h>
 #include <asm/io.h>

@@ -2,6 +2,8 @@
 /*
  * Copyright 2020 NXP
  */
+
+#define DEBUG 1
 #include <common.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/mach-imx/optee.h>

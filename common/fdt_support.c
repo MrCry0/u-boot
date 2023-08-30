@@ -679,6 +679,7 @@ int fdt_shrink_to_minimum(void *blob, uint extrasize)
 		return 0;
 
 	total = fdt_num_mem_rsv(blob);
+	printf("t=%d\n", total);
 	for (i = 0; i < total; i++) {
 		fdt_get_mem_rsv(blob, i, &addr, &size);
 		if (addr == (uintptr_t)blob) {

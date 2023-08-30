@@ -169,6 +169,7 @@ static const struct fdt_reserve_entry *fdt_mem_rsv(const void *fdt, int n)
 		    sizeof(struct fdt_reserve_entry))
 			return NULL;
 	}
+	printf("%s(): _\n", __func__);
 	return fdt_mem_rsv_(fdt, n);
 }
 
@@ -191,7 +192,13 @@ int fdt_num_mem_rsv(const void *fdt)
 	int i;
 	const struct fdt_reserve_entry *re;
 
+	printf("%s(): call fdt_mem_rsv(0x%lx, 0)\n", __func__,
+	       (unsigned long)fdt);
 	for (i = 0; (re = fdt_mem_rsv(fdt, i)) != NULL; i++) {
+		printf("%s(): fdt_mem_rsv(0x%lx, %d) = (0x%llx, 0x%llx)\n",
+		       __func__, (unsigned long)fdt, i,
+		       (unsigned long long)re->address,
+		       (unsigned long long)re->size);
 		if (fdt64_to_cpu(re->size) == 0)
 			return i;
 	}
