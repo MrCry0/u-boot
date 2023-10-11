@@ -5,6 +5,7 @@
  *
  * Aneesh V <aneesh@ti.com>
  */
+#define DEBUG
 #include <common.h>
 #include <dm.h>
 #include <log.h>
@@ -131,7 +132,7 @@ int mmc_load_image_raw_sector(struct spl_image_info *spl_image,
 	} else if (IS_ENABLED(CONFIG_SPL_LEGACY_IMAGE_SUPPORT)) {
 		ret = mmc_load_legacy(spl_image, bootdev, mmc, sector, header);
 	} else {
-		puts("mmc_load_image_raw_sector: unsupported image format\n");
+		printf("mmc_load_image_raw_sector: unsupported image format, magic=0x%lx\n", image_get_magic(header));
 		return -1;
 	}
 
