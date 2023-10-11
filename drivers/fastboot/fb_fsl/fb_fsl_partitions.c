@@ -3,6 +3,7 @@
  * Copyright 2019-2020 NXP
  */
 
+#define DEBUG
 #include <asm/mach-imx/sys_proto.h>
 #include <fb_fsl.h>
 #include <fastboot.h>
