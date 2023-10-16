@@ -149,9 +149,9 @@ static void process_flash_blkdev(const char *cmdbuf, void *download_buffer,
 		/* Next is the partition name */
 		ptn = fastboot_flash_find_ptn(cmdbuf);
 		if (ptn == NULL) {
+			fastboot_flash_dump_ptn();
 			fastboot_response("FAIL", response,
 					  "partition %s does not exist", cmdbuf);
-			fastboot_flash_dump_ptn();
 		} else if ((download_bytes >
 			   ptn->length * MMC_SATA_BLOCK_SIZE) &&
 				!(ptn->flags & FASTBOOT_PTENTRY_FLAGS_WRITE_ENV)) {
@@ -300,10 +300,10 @@ static void process_erase_blkdev(const char *cmdbuf, char *response)
 
 	ptn = fastboot_flash_find_ptn(cmdbuf);
 	if ((ptn == NULL) || (ptn->flags & FASTBOOT_PTENTRY_FLAGS_UNERASEABLE)) {
+		fastboot_flash_dump_ptn();
 		fastboot_response("FAIL", response,
 				  "partition %s does not exist or uneraseable",
 				  cmdbuf);
-		fastboot_flash_dump_ptn();
 		return;
 	}
 
@@ -383,9 +383,9 @@ static void process_flash_sf(const char *cmdbuf, void *download_buffer,
 		struct fastboot_ptentry *ptn;
 		ptn = fastboot_flash_find_ptn(cmdbuf);
 		if (ptn == 0) {
+			fastboot_flash_dump_ptn();
 			fastboot_response("FAIL", response,
 					  "partition %s does not exist", cmdbuf);
-			fastboot_flash_dump_ptn();
 		} else if ((download_bytes > ptn->length * blksz)) {
 			fastboot_fail("image too large for partition", response);
 		/* TODO : Improve check for yaffs write */
@@ -511,9 +511,9 @@ void process_erase_mmc(const char *cmdbuf, char *response)
 
 	ptn = fastboot_flash_find_ptn(cmdbuf);
 	if ((ptn == NULL) || (ptn->flags & FASTBOOT_PTENTRY_FLAGS_UNERASEABLE)) {
+		fastboot_flash_dump_ptn();
 		sprintf(response,
 			"FAILpartition %s does not exist or uneraseable", cmdbuf);
-		fastboot_flash_dump_ptn();
 		return;
 	}
 

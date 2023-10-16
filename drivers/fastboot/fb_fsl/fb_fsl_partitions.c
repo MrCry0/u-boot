@@ -383,6 +383,7 @@ void fastboot_flash_add_ptn(struct fastboot_ptentry *ptn)
 void fastboot_flash_dump_ptn(void)
 {
 	unsigned int n;
+	printf("Partitions count: %d\n", g_pcount);
 	for (n = 0; n < g_pcount; n++) {
 		struct fastboot_ptentry *ptn = g_ptable + n;
 		printf("idx %d, ptn %d name='%s' start=%d len=%ld\n",
