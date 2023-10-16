@@ -474,6 +474,7 @@ void fastboot_process_flash(const char *cmdbuf, void *download_buffer,
 #ifdef CONFIG_ARCH_IMX8M
 		case DEV_MMC:
 			if (is_tcm_image(download_buffer))
+				printf("%s():%d: call process_flash_blkdev()", __func__, __LINE__);
 				process_flash_blkdev(cmdbuf, download_buffer,
 					download_bytes, response);
 			break;
@@ -488,6 +489,7 @@ void fastboot_process_flash(const char *cmdbuf, void *download_buffer,
 	switch (fastboot_devinfo.type) {
 	case DEV_SATA:
 	case DEV_MMC:
+		printf("%s():%d: call process_flash_blkdev()", __func__, __LINE__);
 		process_flash_blkdev(cmdbuf, download_buffer,
 			download_bytes, response);
 		break;

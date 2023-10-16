@@ -990,6 +990,7 @@ static void flash(char *cmd, char *response)
 		   So if the next command is "fastboot reboot bootloader",
 		   it can find the "misc" partition to r/w. */
 		if(gpt_valid) {
+			printf("%s(): call fastboot_load_partitions()\n", __func__);
 			fastboot_load_partitions();
 			/* Unlock device if the gpt is valid */
 			do_fastboot_unlock(true);

@@ -387,8 +387,10 @@ void fastboot_setup(void)
 	ret = _fastboot_setup_dev(&sw);
 
 	/*load partitions information for the fastboot dev*/
-	if (!ret && sw)
+	if (!ret && sw) {
+		printf("%s(): call fastboot_load_partitions()\n", __func__);
 		fastboot_load_partitions();
+	}
 
 	fastboot_init(NULL, 0);
 #ifdef CONFIG_AVB_SUPPORT
