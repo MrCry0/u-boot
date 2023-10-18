@@ -70,6 +70,8 @@ static ulong secondary_image_table_mmc_offset(void)
 	} else if (is_mx6() || is_mx7() || is_mx7ulp()) {
 		return 0x200;
 	}
+
+	return 0x8200;
 }
 #endif
 
