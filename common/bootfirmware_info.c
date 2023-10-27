@@ -2,6 +2,7 @@
 
 #include <common.h>
 #include <dm.h>
+#include <env.h>
 #include <init.h>
 #include <sysinfo.h>
 #include <asm/global_data.h>
@@ -12,7 +13,7 @@
 
 int __weak get_boot_firmware_info(void)
 {
-	char *version;
+	const char *version;
 	int node;
 	int ret = 0;
 
