@@ -3,6 +3,8 @@
  * Copyright 2019 NXP
  */
 
+#define DEBUG
+
 #include <common.h>
 #include <efi_loader.h>
 #include <env.h>

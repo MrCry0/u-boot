@@ -21,6 +21,8 @@
  * Probes device for being a hub and configurate it
  */
 
+#define DEBUG
+
 #include <common.h>
 #include <command.h>
 #include <dm.h>

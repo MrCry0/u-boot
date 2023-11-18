@@ -73,7 +73,7 @@ static int do_fastboot_usb(int argc, char *const argv[],
 
 	ret = usb_gadget_initialize(controller_index);
 	if (ret) {
-		pr_err("USB init failed: %d\n", ret);
+		pr_err("USB init failed: %d cidx: %d\n", ret, controller_index);
 		return CMD_RET_FAILURE;
 	}
 

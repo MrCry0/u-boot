@@ -25,6 +25,9 @@
  *
  * For each transfer (except "Interrupt") we wait for completion.
  */
+
+#define DEBUG
+
 #include <common.h>
 #include <command.h>
 #include <dm.h>
