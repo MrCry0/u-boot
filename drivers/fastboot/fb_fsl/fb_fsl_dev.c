@@ -489,7 +489,7 @@ void fastboot_process_flash(const char *cmdbuf, void *download_buffer,
 	case DEV_SATA:
 	case DEV_MMC:
 		process_flash_blkdev(cmdbuf, download_buffer,
-			download_bytes, response);
+				     download_bytes, response);
 		break;
 	default:
 		printf("Not support flash command for current device %d\n",

@@ -34,6 +34,7 @@
  *   to the "BSD-3-Clause", therefore, DO NOT MODIFY THIS LICENSE TEXT!
  */
 
+#define DEBUG
 #include <config.h>
 #include <common.h>
 #include <blk.h>
@@ -195,6 +196,9 @@ int write_sparse_image(struct sparse_storage *info,
 		case CHUNK_TYPE_RAW:
 			if (chunk_header->total_sz !=
 			    (sparse_header->chunk_hdr_sz + chunk_data_sz)) {
+				printf(
+				    "%s: Bogus chunk size for chunk type Raw\n",
+				    __func__);
 				info->mssg("Bogus chunk size for chunk type Raw",
 					   response);
 				return -1;
@@ -211,8 +215,12 @@ int write_sparse_image(struct sparse_storage *info,
 
 			blks = write_sparse_chunk_raw(info, blk, blkcnt,
 						      data, response);
-			if (blks < 0)
+			if (blks < 0) {
+				printf(
+				    "%s: write_sparse_chunk_raw() = %d\n",
+				    __func__, blks);
 				return -1;
+			}
 
 			blk += blks;
 			bytes_written += ((u64)blkcnt) * info->blksz;
@@ -223,6 +231,9 @@ int write_sparse_image(struct sparse_storage *info,
 		case CHUNK_TYPE_FILL:
 			if (chunk_header->total_sz !=
 			    (sparse_header->chunk_hdr_sz + sizeof(uint32_t))) {
+				printf(
+				    "%s: Bogus chunk size for chunk type FILL\n",
+				    __func__);
 				info->mssg("Bogus chunk size for chunk type FILL", response);
 				return -1;
 			}
@@ -233,6 +244,9 @@ int write_sparse_image(struct sparse_storage *info,
 						info->blksz * fill_buf_num_blks,
 						ARCH_DMA_MINALIGN));
 			if (!fill_buf) {
+				printf(
+				    "%s: Malloc failed for: CHUNK_TYPE_FILL\n",
+				    __func__);
 				info->mssg("Malloc failed for: CHUNK_TYPE_FILL",
 					   response);
 				return -1;
@@ -290,6 +304,9 @@ int write_sparse_image(struct sparse_storage *info,
 		case CHUNK_TYPE_CRC32:
 			if (chunk_header->total_sz !=
 			    sparse_header->chunk_hdr_sz) {
+				printf(
+				    "%s: Bogus chunk size for chunk type Dont Care\n",
+				    __func__);
 				info->mssg("Bogus chunk size for chunk type Dont Care",
 					   response);
 				return -1;
@@ -311,6 +328,8 @@ int write_sparse_image(struct sparse_storage *info,
 	printf("........ wrote %llu bytes to '%s'\n", bytes_written, part_name);
 
 	if (total_blocks != sparse_header->total_blks) {
+		printf("%s: sparse image write failure: %d != %d\n",
+		       __func__, total_blocks, sparse_header->total_blks);
 		info->mssg("sparse image write failure", response);
 		return -1;
 	}
