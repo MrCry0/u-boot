@@ -32,7 +32,7 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#if defined(CONFIG_FPGA_VERSALPL)
+#if IS_ENABLED(CONFIG_FPGA_VERSALPL) && !CONFIG_IS_ENABLED(DM_FPGA)
 static xilinx_desc versalpl = {
 	xilinx_versal, csu_dma, 1, &versal_op, 0, &versal_op, NULL,
 	FPGA_LEGACY
@@ -80,7 +80,7 @@ int board_init(void)
 	printf("EL Level:\tEL%d\n", current_el());
 	printf("Multiboot:\t%d\n", versal_multi_boot());
 
-#if defined(CONFIG_FPGA_VERSALPL)
+#if IS_ENABLED(CONFIG_FPGA_VERSALPL) && !CONFIG_IS_ENABLED(DM_FPGA)
 	fpga_init();
 	fpga_add(fpga_xilinx, &versalpl);
 #endif
