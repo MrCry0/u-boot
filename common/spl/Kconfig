@@ -833,6 +833,15 @@ config SPL_FPGA
 	  as early as possible during boot, and this option can enable that
 	  within SPL.
 
+config SPL_DM_FPGA
+	bool "Enable Driver Model for FPGA drivers in SPL"
+	depends on SPL_DM && SPL_FPGA
+	help
+	  Enable driver model for FPGA devices in SPL.  Devices are probed
+	  from the device tree via their compatible string, and the struct
+	  fpga_ops interface is used for load and status operations.  See
+	  DM_FPGA for a full description.
+
 config SPL_GPIO
 	bool "Support GPIO in SPL"
 	help
