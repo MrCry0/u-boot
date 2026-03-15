@@ -18,6 +18,20 @@
 #include <spartan3.h>
 #include <zynqpl.h>
 #include <linux/string.h>
+#if CONFIG_IS_ENABLED(DM_FPGA)
+#include <dm.h>
+#include <fpga-uclass.h>
+#if IS_ENABLED(CONFIG_FPGA_ZYNQMPPL)
+#include <zynqmppl.h>
+#endif
+#if IS_ENABLED(CONFIG_FPGA_VERSALPL)
+#include <versalpl.h>
+#endif
+
+struct xilinx_fpga_priv {
+	xilinx_desc desc;
+};
+#endif
 
 /* Local Static Functions */
 static int xilinx_validate(xilinx_desc *desc, char *fn);
@@ -26,8 +40,19 @@ static int xilinx_validate(xilinx_desc *desc, char *fn);
 
 int fpga_is_partial_data(int devnum, size_t img_len)
 {
-	const fpga_desc * const desc = fpga_get_desc(devnum);
-	xilinx_desc *desc_xilinx = desc->devdesc;
+	xilinx_desc *desc_xilinx;
+
+	if (CONFIG_IS_ENABLED(DM_FPGA)) {
+		struct udevice *dev;
+
+		if (!uclass_get_device(UCLASS_FPGA, devnum, &dev)) {
+			struct xilinx_fpga_priv *priv = dev_get_priv(dev);
+
+			return img_len < priv->desc.size ? 1 : 0;
+		}
+	}
+
+	desc_xilinx = fpga_get_desc(devnum)->devdesc;
 
 	/* Check datasize against FPGA size */
 	if (img_len >= desc_xilinx->size)
@@ -319,3 +344,157 @@ static int xilinx_validate(xilinx_desc *desc, char *fn)
 
 	return ret_val;
 }
+
+/* ------------------------------------------------------------------------- */
+/* Driver model support */
+
+#if CONFIG_IS_ENABLED(DM_FPGA)
+
+static int xilinx_dm_load(struct udevice *dev, const void *buf, size_t bsize,
+			  bitstream_type bstype, int flags)
+{
+	struct xilinx_fpga_priv *priv = dev_get_priv(dev);
+
+	return xilinx_load(&priv->desc, buf, bsize, bstype, flags);
+}
+
+#if CONFIG_IS_ENABLED(FPGA_LOAD_SECURE)
+static int xilinx_dm_loads(struct udevice *dev, const void *buf, size_t bsize,
+			   struct fpga_secure_info *info)
+{
+	struct xilinx_fpga_priv *priv = dev_get_priv(dev);
+
+	return xilinx_loads(&priv->desc, buf, bsize, info);
+}
+#endif
+
+#if IS_ENABLED(CONFIG_CMD_FPGA_LOADFS)
+static int xilinx_dm_loadfs(struct udevice *dev, const void *buf, size_t bsize,
+			    fpga_fs_info *fsinfo)
+{
+	struct xilinx_fpga_priv *priv = dev_get_priv(dev);
+
+	return xilinx_loadfs(&priv->desc, buf, bsize, fsinfo);
+}
+#endif
+
+static int xilinx_dm_dump(struct udevice *dev, const void *buf, size_t bsize)
+{
+	struct xilinx_fpga_priv *priv = dev_get_priv(dev);
+
+	return xilinx_dump(&priv->desc, buf, bsize);
+}
+
+static int xilinx_dm_info(struct udevice *dev)
+{
+	struct xilinx_fpga_priv *priv = dev_get_priv(dev);
+
+	return xilinx_info(&priv->desc);
+}
+
+#if CONFIG_IS_ENABLED(FPGA_LOAD_SECURE)
+static int xilinx_dm_compatible2flag(struct udevice *dev, const char *str)
+{
+	struct xilinx_fpga_priv *priv = dev_get_priv(dev);
+	xilinx_desc *xdesc = &priv->desc;
+
+	if (xdesc->operations && xdesc->operations->str2flag)
+		return xdesc->operations->str2flag(xdesc, str);
+
+	return 0;
+}
+#endif
+
+static const struct fpga_ops xilinx_fpga_ops = {
+	.load		= xilinx_dm_load,
+#if CONFIG_IS_ENABLED(FPGA_LOAD_SECURE)
+	.loads		= xilinx_dm_loads,
+	.compatible2flag = xilinx_dm_compatible2flag,
+#endif
+#if IS_ENABLED(CONFIG_CMD_FPGA_LOADFS)
+	.loadfs		= xilinx_dm_loadfs,
+#endif
+	.dump		= xilinx_dm_dump,
+	.info		= xilinx_dm_info,
+};
+
+static int xilinx_fpga_of_to_plat(struct udevice *dev)
+{
+	struct xilinx_fpga_priv *priv = dev_get_priv(dev);
+	xilinx_desc *desc = &priv->desc;
+	const char *label;
+
+	desc->family = (xilinx_family)dev_get_driver_data(dev);
+	desc->size = dev_read_u32_default(dev, "xlnx,bitstream-size", 1);
+
+	label = dev_read_string(dev, "label");
+	if (label)
+		desc->name = (char *)label;
+
+	return 0;
+}
+
+static int xilinx_fpga_probe(struct udevice *dev)
+{
+	struct xilinx_fpga_priv *priv = dev_get_priv(dev);
+	xilinx_desc *desc = &priv->desc;
+
+	switch (desc->family) {
+#if IS_ENABLED(CONFIG_FPGA_ZYNQMPPL)
+	case xilinx_zynqmp:
+		desc->iface = csu_dma;
+		desc->iface_fns = &zynqmp_op;
+		desc->operations = &zynqmp_op;
+		desc->flags = ZYNQMP_FPGA_FLAGS;
+		break;
+#endif
+#if IS_ENABLED(CONFIG_FPGA_VERSALPL)
+	case xilinx_versal:
+	case xilinx_versal_net:
+	case xilinx_versal2:
+		desc->iface = cfi;
+		desc->iface_fns = &versal_op;
+		desc->operations = &versal_op;
+		desc->flags = FPGA_LEGACY;
+		break;
+#endif
+#if IS_ENABLED(CONFIG_FPGA_ZYNQPL)
+	case xilinx_zynq:
+		desc->iface = devcfg;
+		desc->iface_fns = &zynq_op;
+		desc->operations = &zynq_op;
+		desc->flags = FPGA_LEGACY;
+		break;
+#endif
+	default:
+		return -ENODEV;
+	}
+
+	return 0;
+}
+
+static const struct udevice_id xilinx_fpga_match[] = {
+#if IS_ENABLED(CONFIG_FPGA_ZYNQMPPL)
+	{ .compatible = "xlnx,zynqmp-pcap-fpga", .data = xilinx_zynqmp },
+#endif
+#if IS_ENABLED(CONFIG_FPGA_VERSALPL)
+	{ .compatible = "xlnx,versal-fpga", .data = xilinx_versal },
+	{ .compatible = "xlnx,versal-net-fpga", .data = xilinx_versal_net },
+#endif
+#if IS_ENABLED(CONFIG_FPGA_ZYNQPL)
+	{ .compatible = "xlnx,zynq-devcfg-1.0", .data = xilinx_zynq },
+#endif
+	{ /* sentinel */ }
+};
+
+U_BOOT_DRIVER(xilinx_fpga) = {
+	.name		= "xilinx_fpga",
+	.id		= UCLASS_FPGA,
+	.of_match	= xilinx_fpga_match,
+	.of_to_plat	= xilinx_fpga_of_to_plat,
+	.probe		= xilinx_fpga_probe,
+	.priv_auto	= sizeof(struct xilinx_fpga_priv),
+	.ops		= &xilinx_fpga_ops,
+};
+
+#endif /* CONFIG_IS_ENABLED(DM_FPGA) */
