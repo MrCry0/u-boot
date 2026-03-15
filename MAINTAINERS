@@ -1208,6 +1208,7 @@ S:	Maintained
 T:	git https://source.denx.de/u-boot/custodians/u-boot-microblaze.git
 F:	drivers/fpga/
 F:	cmd/fpga.c
+F:	include/fpga-uclass.h
 F:	include/fpga.h
 F:	test/dm/fpga.c
 
