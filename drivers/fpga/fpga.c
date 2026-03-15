@@ -9,7 +9,9 @@
 #include <log.h>
 #include <xilinx.h>             /* xilinx specific definitions */
 #include <altera.h>             /* altera specific definitions */
+#include <dm.h>
 #include <dm/device_compat.h>
+#include <fpga-uclass.h>
 
 /* Local static data */
 static int next_desc = FPGA_INVALID_DEVICE;
@@ -109,6 +111,18 @@ void fpga_init(void)
  */
 int fpga_count(void)
 {
+	if (CONFIG_IS_ENABLED(DM_FPGA)) {
+		struct uclass *uc;
+		struct udevice *dev;
+		int count = 0;
+
+		if (!uclass_get(UCLASS_FPGA, &uc)) {
+			uclass_foreach_dev(dev, uc)
+				count++;
+		}
+		if (count)
+			return count;
+	}
 	return next_desc;
 }
 
@@ -166,6 +180,14 @@ int fpga_fsload(int devnum, const void *buf, size_t size,
 		 fpga_fs_info *fpga_fsinfo)
 {
 	int ret_val = FPGA_FAIL;           /* assume failure */
+
+	if (CONFIG_IS_ENABLED(DM_FPGA)) {
+		struct udevice *dev;
+
+		if (!uclass_get_device(UCLASS_FPGA, devnum, &dev))
+			return fpga_uclass_loadfs(dev, buf, size, fpga_fsinfo);
+	}
+
 	const fpga_desc *desc = fpga_validate(devnum, buf, size);
 
 	if (desc) {
@@ -193,6 +215,13 @@ int fpga_loads(int devnum, const void *buf, size_t size,
 	       struct fpga_secure_info *fpga_sec_info)
 {
 	int ret_val = FPGA_FAIL;
+
+	if (CONFIG_IS_ENABLED(DM_FPGA)) {
+		struct udevice *dev;
+
+		if (!uclass_get_device(UCLASS_FPGA, devnum, &dev))
+			return fpga_uclass_loads(dev, buf, size, fpga_sec_info);
+	}
 
 	const fpga_desc *desc = fpga_validate(devnum, buf, size);
 
@@ -239,6 +268,14 @@ int fpga_load(int devnum, const void *buf, size_t bsize, bitstream_type bstype,
 {
 	int ret_val = FPGA_FAIL;           /* assume failure */
 	int ret_notify;
+
+	if (CONFIG_IS_ENABLED(DM_FPGA)) {
+		struct udevice *dev;
+
+		if (!uclass_get_device(UCLASS_FPGA, devnum, &dev))
+			return fpga_uclass_load(dev, buf, bsize, bstype, flags);
+	}
+
 	const fpga_desc *desc = fpga_validate(devnum, buf, bsize);
 
 	if (desc) {
@@ -278,6 +315,14 @@ int fpga_load(int devnum, const void *buf, size_t bsize, bitstream_type bstype,
 int fpga_dump(int devnum, const void *buf, size_t bsize)
 {
 	int ret_val = FPGA_FAIL;           /* assume failure */
+
+	if (CONFIG_IS_ENABLED(DM_FPGA)) {
+		struct udevice *dev;
+
+		if (!uclass_get_device(UCLASS_FPGA, devnum, &dev))
+			return fpga_uclass_dump(dev, buf, bsize);
+	}
+
 	const fpga_desc *desc = fpga_validate(devnum, buf, bsize);
 
 	if (desc) {
@@ -312,6 +357,14 @@ int fpga_dump(int devnum, const void *buf, size_t bsize)
  */
 int fpga_info(int devnum)
 {
+	if (CONFIG_IS_ENABLED(DM_FPGA)) {
+		struct udevice *dev;
+
+		if (devnum != FPGA_INVALID_DEVICE &&
+		    !uclass_get_device(UCLASS_FPGA, devnum, &dev))
+			return fpga_uclass_info(dev);
+	}
+
 	if (devnum == FPGA_INVALID_DEVICE) {
 		if (next_desc > 0) {
 			int dev;
@@ -332,6 +385,13 @@ int fpga_info(int devnum)
 #if CONFIG_IS_ENABLED(FPGA_LOAD_SECURE)
 int fpga_compatible2flag(int devnum, const char *compatible)
 {
+	if (CONFIG_IS_ENABLED(DM_FPGA)) {
+		struct udevice *dev;
+
+		if (!uclass_get_device(UCLASS_FPGA, devnum, &dev))
+			return fpga_uclass_compatible2flag(dev, compatible);
+	}
+
 	const fpga_desc *desc = fpga_get_desc(devnum);
 
 	if (!desc)
