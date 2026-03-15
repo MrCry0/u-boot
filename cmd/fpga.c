@@ -8,8 +8,10 @@
  *  FPGA support
  */
 #include <command.h>
+#include <dm.h>
 #include <env.h>
 #include <fpga.h>
+#include <fpga-uclass.h>
 #include <fs.h>
 #include <gzip.h>
 #include <image.h>
@@ -148,6 +150,14 @@ static int do_fpga_info(struct cmd_tbl *cmdtp, int flag, int argc,
 			char *const argv[])
 {
 	long dev = do_fpga_get_device(argv[0]);
+
+	if (CONFIG_IS_ENABLED(DM_FPGA) && dev == FPGA_INVALID_DEVICE) {
+		struct udevice *udev;
+
+		uclass_foreach_dev_probe(UCLASS_FPGA, udev)
+			fpga_uclass_info(udev);
+		return CMD_RET_SUCCESS;
+	}
 
 	return fpga_info(dev);
 }
