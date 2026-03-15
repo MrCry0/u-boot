@@ -24,6 +24,11 @@
 	binman: binman {
 	};
 
+	fpga@0 {
+		compatible = "sandbox,fpga";
+		reg = <0 0>;
+	};
+
 	memory {
 		reg = <0 CFG_SYS_SDRAM_SIZE>;
 	};
