@@ -53,6 +53,8 @@ int fpga_is_partial_data(int devnum, size_t img_len)
 	}
 
 	desc_xilinx = fpga_get_desc(devnum)->devdesc;
+	if (!desc_xilinx)
+		return 0;
 
 	/* Check datasize against FPGA size */
 	if (img_len >= desc_xilinx->size)
@@ -133,7 +135,7 @@ int fpga_loadbitstream(int devnum, char *fpgadata, size_t size,
 		return FPGA_FAIL;
 	}
 
-	length = (*dataptr << 8) + *(dataptr+1);
+	length = (*dataptr << 8) + *(dataptr + 1);
 	dataptr += 2;
 	printf("  date = \"%s\"\n", dataptr);
 	dataptr += length;
@@ -145,7 +147,7 @@ int fpga_loadbitstream(int devnum, char *fpgadata, size_t size,
 		return FPGA_FAIL;
 	}
 
-	length = (*dataptr << 8) + *(dataptr+1);
+	length = (*dataptr << 8) + *(dataptr + 1);
 	dataptr += 2;
 	printf("  time = \"%s\"\n", dataptr);
 	dataptr += length;
@@ -156,10 +158,10 @@ int fpga_loadbitstream(int devnum, char *fpgadata, size_t size,
 		       __func__);
 		return FPGA_FAIL;
 	}
-	swapsize = ((unsigned int) *dataptr << 24) +
-		   ((unsigned int) *(dataptr + 1) << 16) +
-		   ((unsigned int) *(dataptr + 2) << 8) +
-		   ((unsigned int) *(dataptr + 3));
+	swapsize = ((unsigned int)*dataptr << 24) +
+		   ((unsigned int)*(dataptr + 1) << 16) +
+		   ((unsigned int)*(dataptr + 2) << 8) +
+		   ((unsigned int)*(dataptr + 3));
 	dataptr += 4;
 	printf("  bytes in bitstream = %d\n", swapsize);
 
@@ -169,8 +171,8 @@ int fpga_loadbitstream(int devnum, char *fpgadata, size_t size,
 int xilinx_load(xilinx_desc *desc, const void *buf, size_t bsize,
 		bitstream_type bstype, int flags)
 {
-	if (!xilinx_validate (desc, (char *)__FUNCTION__)) {
-		printf ("%s: Invalid device descriptor\n", __FUNCTION__);
+	if (!xilinx_validate(desc, (char *)__FUNCTION__)) {
+		printf("%s: Invalid device descriptor\n", __FUNCTION__);
 		return FPGA_FAIL;
 	}
 
@@ -184,7 +186,7 @@ int xilinx_load(xilinx_desc *desc, const void *buf, size_t bsize,
 
 #if defined(CONFIG_CMD_FPGA_LOADFS)
 int xilinx_loadfs(xilinx_desc *desc, const void *buf, size_t bsize,
-		   fpga_fs_info *fpga_fsinfo)
+		  fpga_fs_info *fpga_fsinfo)
 {
 	if (!xilinx_validate(desc, (char *)__func__)) {
 		printf("%s: Invalid device descriptor\n", __func__);
@@ -220,8 +222,8 @@ int xilinx_loads(xilinx_desc *desc, const void *buf, size_t bsize,
 
 int xilinx_dump(xilinx_desc *desc, const void *buf, size_t bsize)
 {
-	if (!xilinx_validate (desc, (char *)__FUNCTION__)) {
-		printf ("%s: Invalid device descriptor\n", __FUNCTION__);
+	if (!xilinx_validate(desc, (char *)__FUNCTION__)) {
+		printf("%s: Invalid device descriptor\n", __FUNCTION__);
 		return FPGA_FAIL;
 	}
 
@@ -237,17 +239,17 @@ int xilinx_info(xilinx_desc *desc)
 {
 	int ret_val = FPGA_FAIL;
 
-	if (xilinx_validate (desc, (char *)__FUNCTION__)) {
-		printf ("Family:        \t");
+	if (xilinx_validate(desc, (char *)__FUNCTION__)) {
+		printf("Family:        \t");
 		switch (desc->family) {
 		case xilinx_spartan2:
-			printf ("Spartan-II\n");
+			printf("Spartan-II\n");
 			break;
 		case xilinx_spartan3:
-			printf ("Spartan-III\n");
+			printf("Spartan-III\n");
 			break;
 		case xilinx_virtex2:
-			printf ("Virtex-II\n");
+			printf("Virtex-II\n");
 			break;
 		case xilinx_zynq:
 			printf("Zynq PL\n");
@@ -260,28 +262,28 @@ int xilinx_info(xilinx_desc *desc)
 			break;
 		/* Add new family types here */
 		default:
-			printf ("Unknown family type, %d\n", desc->family);
+			printf("Unknown family type, %d\n", desc->family);
 		}
 
-		printf ("Interface type:\t");
+		printf("Interface type:\t");
 		switch (desc->iface) {
 		case slave_serial:
-			printf ("Slave Serial\n");
+			printf("Slave Serial\n");
 			break;
-		case master_serial:	/* Not used */
-			printf ("Master Serial\n");
+		case master_serial: /* Not used */
+			printf("Master Serial\n");
 			break;
 		case slave_parallel:
-			printf ("Slave Parallel\n");
+			printf("Slave Parallel\n");
 			break;
-		case jtag_mode:		/* Not used */
-			printf ("JTAG Mode\n");
+		case jtag_mode: /* Not used */
+			printf("JTAG Mode\n");
 			break;
 		case slave_selectmap:
-			printf ("Slave SelectMap Mode\n");
+			printf("Slave SelectMap Mode\n");
 			break;
 		case master_selectmap:
-			printf ("Master SelectMap Mode\n");
+			printf("Master SelectMap Mode\n");
 			break;
 		case devcfg:
 			printf("Device configuration interface (Zynq)\n");
@@ -294,7 +296,7 @@ int xilinx_info(xilinx_desc *desc)
 			break;
 			/* Add new interface types here */
 		default:
-			printf ("Unsupported interface type, %d\n", desc->iface);
+			printf("Unsupported interface type, %d\n", desc->iface);
 		}
 
 		printf("Device Size:   \t%zd bytes\n"
@@ -304,16 +306,17 @@ int xilinx_info(xilinx_desc *desc)
 			printf("Device name:   \t%s\n", desc->name);
 
 		if (desc->iface_fns)
-			printf ("Device Function Table @ 0x%p\n", desc->iface_fns);
+			printf("Device Function Table @ 0x%p\n",
+			       desc->iface_fns);
 		else
-			printf ("No Device Function Table.\n");
+			printf("No Device Function Table.\n");
 
 		if (desc->operations && desc->operations->info)
 			desc->operations->info(desc);
 
 		ret_val = FPGA_SUCCESS;
 	} else {
-		printf ("%s: Invalid device descriptor\n", __FUNCTION__);
+		printf("%s: Invalid device descriptor\n", __FUNCTION__);
 	}
 
 	return ret_val;
@@ -327,20 +330,21 @@ static int xilinx_validate(xilinx_desc *desc, char *fn)
 
 	if (desc) {
 		if ((desc->family > min_xilinx_type) &&
-			(desc->family < max_xilinx_type)) {
+		    (desc->family < max_xilinx_type)) {
 			if ((desc->iface > min_xilinx_iface_type) &&
-				(desc->iface < max_xilinx_iface_type)) {
+			    (desc->iface < max_xilinx_iface_type)) {
 				if (desc->size) {
 					ret_val = true;
 				} else
-					printf ("%s: NULL part size\n", fn);
+					printf("%s: NULL part size\n", fn);
 			} else
-				printf ("%s: Invalid Interface type, %d\n",
-						fn, desc->iface);
+				printf("%s: Invalid Interface type, %d\n", fn,
+				       desc->iface);
 		} else
-			printf ("%s: Invalid family type, %d\n", fn, desc->family);
+			printf("%s: Invalid family type, %d\n", fn,
+			       desc->family);
 	} else
-		printf ("%s: NULL descriptor!\n", fn);
+		printf("%s: NULL descriptor!\n", fn);
 
 	return ret_val;
 }
@@ -406,16 +410,16 @@ static int xilinx_dm_compatible2flag(struct udevice *dev, const char *str)
 #endif
 
 static const struct fpga_ops xilinx_fpga_ops = {
-	.load		= xilinx_dm_load,
+	.load = xilinx_dm_load,
 #if CONFIG_IS_ENABLED(FPGA_LOAD_SECURE)
-	.loads		= xilinx_dm_loads,
+	.loads = xilinx_dm_loads,
 	.compatible2flag = xilinx_dm_compatible2flag,
 #endif
 #if IS_ENABLED(CONFIG_CMD_FPGA_LOADFS)
-	.loadfs		= xilinx_dm_loadfs,
+	.loadfs = xilinx_dm_loadfs,
 #endif
-	.dump		= xilinx_dm_dump,
-	.info		= xilinx_dm_info,
+	.dump = xilinx_dm_dump,
+	.info = xilinx_dm_info,
 };
 
 static int xilinx_fpga_of_to_plat(struct udevice *dev)
@@ -473,6 +477,11 @@ static int xilinx_fpga_probe(struct udevice *dev)
 	return 0;
 }
 
+static int xilinx_fpga_remove(struct udevice *dev)
+{
+	return 0;
+}
+
 static const struct udevice_id xilinx_fpga_match[] = {
 #if IS_ENABLED(CONFIG_FPGA_ZYNQMPPL)
 	{ .compatible = "xlnx,zynqmp-pcap-fpga", .data = xilinx_zynqmp },
@@ -488,13 +497,14 @@ static const struct udevice_id xilinx_fpga_match[] = {
 };
 
 U_BOOT_DRIVER(xilinx_fpga) = {
-	.name		= "xilinx_fpga",
-	.id		= UCLASS_FPGA,
-	.of_match	= xilinx_fpga_match,
-	.of_to_plat	= xilinx_fpga_of_to_plat,
-	.probe		= xilinx_fpga_probe,
-	.priv_auto	= sizeof(struct xilinx_fpga_priv),
-	.ops		= &xilinx_fpga_ops,
+	.name = "xilinx_fpga",
+	.id = UCLASS_FPGA,
+	.of_match = xilinx_fpga_match,
+	.of_to_plat = xilinx_fpga_of_to_plat,
+	.probe = xilinx_fpga_probe,
+	.remove = xilinx_fpga_remove,
+	.priv_auto = sizeof(struct xilinx_fpga_priv),
+	.ops = &xilinx_fpga_ops,
 };
 
 #endif /* CONFIG_IS_ENABLED(DM_FPGA) */
