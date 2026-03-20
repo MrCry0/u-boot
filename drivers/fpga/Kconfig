@@ -65,6 +65,7 @@ config FPGA_XILINX
 config FPGA_ZYNQMPPL
 	bool "Enable Xilinx FPGA driver for ZynqMP"
 	depends on FPGA_XILINX && ZYNQMP_FIRMWARE
+	select DM_FPGA if DM
 	help
 	  Enable FPGA driver for loading bitstream in BIT and BIN format
 	  on Xilinx Zynq UltraScale+ (ZynqMP) device.
@@ -108,6 +109,9 @@ config FPGA_ZYNQPL
 	  Enable FPGA driver for loading bitstream in BIT and BIN format
 	  on Xilinx Zynq devices.
 
+	  Note: This driver does not auto-select DM_FPGA. For driver model
+	  support, use FPGA_ZYNQMPPL which covers ZynqMP devices.
+
 config SYS_FPGA_CHECK_CTRLC
 	bool "Allow Control-C to interrupt FPGA configuration"
 	depends on FPGA
@@ -145,7 +149,11 @@ config DM_FPGA
 	  runtime by loading a bitstream into the FPGA device.
 	  Loading a bitstream from any kind of storage is the main task of the
 	  FPGA drivers.
-	  For now this uclass has no methods yet.
+
+	  Drivers expose a struct fpga_ops with load, dump, info and optional
+	  loads/loadfs/compatible2flag ops.  Devices are probed from DT via
+	  their compatible string.  The legacy static fpga_add() path remains
+	  active for boards that do not use DM.
 
 config SANDBOX_FPGA
 	bool "Enable sandbox FPGA driver"
