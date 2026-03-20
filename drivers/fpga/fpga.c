@@ -7,8 +7,8 @@
 /* Generic FPGA support */
 #include <init.h>
 #include <log.h>
-#include <xilinx.h>             /* xilinx specific definitions */
-#include <altera.h>             /* altera specific definitions */
+#include <xilinx.h> /* xilinx specific definitions */
+#include <altera.h> /* altera specific definitions */
 #include <dm.h>
 #include <dm/device_compat.h>
 #include <fpga-uclass.h>
@@ -26,8 +26,7 @@ const fpga_desc *fpga_get_desc(int devnum)
 
 	if ((devnum >= 0) && (devnum < next_desc)) {
 		desc = &desc_table[devnum];
-		log_debug("found fpga descriptor #%d @ 0x%p\n",
-			  devnum, desc);
+		log_debug("found fpga descriptor #%d @ 0x%p\n", devnum, desc);
 	}
 
 	return desc;
@@ -37,8 +36,7 @@ const fpga_desc *fpga_get_desc(int devnum)
  * fpga_validate
  *	generic parameter checking code
  */
-const fpga_desc *fpga_validate(int devnum, const void *buf,
-			       size_t bsize)
+const fpga_desc *fpga_validate(int devnum, const void *buf, size_t bsize)
 {
 	const fpga_desc *desc = fpga_get_desc(devnum);
 
@@ -62,8 +60,7 @@ static int fpga_dev_info(int devnum)
 	const fpga_desc *desc = fpga_get_desc(devnum);
 
 	if (desc) {
-		log_info("Device Descriptor @ 0x%p\n",
-			 desc->devdesc);
+		log_info("Device Descriptor @ 0x%p\n", desc->devdesc);
 
 		switch (desc->devtype) {
 		case fpga_xilinx:
@@ -117,12 +114,14 @@ int fpga_count(void)
 		int count = 0;
 
 		if (!uclass_get(UCLASS_FPGA, &uc)) {
-			uclass_foreach_dev(dev, uc)
-				count++;
+			uclass_foreach_dev(dev, uc) count++;
 		}
 		if (count)
 			return count;
+
+		return 0;
 	}
+
 	return next_desc;
 }
 
@@ -177,9 +176,9 @@ int __weak fpga_loadbitstream(int devnum, char *fpgadata, size_t size,
 
 #if defined(CONFIG_CMD_FPGA_LOADFS)
 int fpga_fsload(int devnum, const void *buf, size_t size,
-		 fpga_fs_info *fpga_fsinfo)
+		fpga_fs_info *fpga_fsinfo)
 {
-	int ret_val = FPGA_FAIL;           /* assume failure */
+	int ret_val = FPGA_FAIL; /* assume failure */
 
 	if (CONFIG_IS_ENABLED(DM_FPGA)) {
 		struct udevice *dev;
@@ -248,11 +247,9 @@ int fpga_loads(int devnum, const void *buf, size_t size,
 static int fpga_load_event_notify(const void *buf, size_t bsize, int result)
 {
 	if (CONFIG_IS_ENABLED(EVENT)) {
-		struct event_fpga_load load = {
-			.buf = buf,
-			.bsize = bsize,
-			.result = result
-		};
+		struct event_fpga_load load = { .buf = buf,
+						.bsize = bsize,
+						.result = result };
 
 		return event_notify(EVT_FPGA_LOAD, &load, sizeof(load));
 	}
@@ -266,14 +263,21 @@ static int fpga_load_event_notify(const void *buf, size_t bsize, int result)
 int fpga_load(int devnum, const void *buf, size_t bsize, bitstream_type bstype,
 	      int flags)
 {
-	int ret_val = FPGA_FAIL;           /* assume failure */
+	int ret_val = FPGA_FAIL; /* assume failure */
 	int ret_notify;
 
 	if (CONFIG_IS_ENABLED(DM_FPGA)) {
 		struct udevice *dev;
 
-		if (!uclass_get_device(UCLASS_FPGA, devnum, &dev))
-			return fpga_uclass_load(dev, buf, bsize, bstype, flags);
+		if (!uclass_get_device(UCLASS_FPGA, devnum, &dev)) {
+			ret_val = fpga_uclass_load(dev, buf, bsize, bstype,
+						   flags);
+			ret_notify =
+				fpga_load_event_notify(buf, bsize, ret_val);
+			if (ret_notify)
+				return ret_notify;
+			return ret_val;
+		}
 	}
 
 	const fpga_desc *desc = fpga_validate(devnum, buf, bsize);
@@ -282,8 +286,8 @@ int fpga_load(int devnum, const void *buf, size_t bsize, bitstream_type bstype,
 		switch (desc->devtype) {
 		case fpga_xilinx:
 #if defined(CONFIG_FPGA_XILINX)
-			ret_val = xilinx_load(desc->devdesc, buf, bsize,
-					      bstype, flags);
+			ret_val = xilinx_load(desc->devdesc, buf, bsize, bstype,
+					      flags);
 #else
 			log_err("No support for Xilinx devices.\n");
 #endif
@@ -314,7 +318,7 @@ int fpga_load(int devnum, const void *buf, size_t bsize, bitstream_type bstype,
  */
 int fpga_dump(int devnum, const void *buf, size_t bsize)
 {
-	int ret_val = FPGA_FAIL;           /* assume failure */
+	int ret_val = FPGA_FAIL; /* assume failure */
 
 	if (CONFIG_IS_ENABLED(DM_FPGA)) {
 		struct udevice *dev;
@@ -358,11 +362,26 @@ int fpga_dump(int devnum, const void *buf, size_t bsize)
 int fpga_info(int devnum)
 {
 	if (CONFIG_IS_ENABLED(DM_FPGA)) {
-		struct udevice *dev;
+		if (devnum != FPGA_INVALID_DEVICE) {
+			struct udevice *dev;
 
-		if (devnum != FPGA_INVALID_DEVICE &&
-		    !uclass_get_device(UCLASS_FPGA, devnum, &dev))
-			return fpga_uclass_info(dev);
+			if (!uclass_get_device(UCLASS_FPGA, devnum, &dev))
+				return fpga_uclass_info(dev);
+
+			return FPGA_FAIL;
+		}
+
+		if (next_desc > 0) {
+			int dev;
+
+			for (dev = 0; dev < next_desc; dev++)
+				fpga_dev_info(dev);
+
+			return FPGA_SUCCESS;
+		}
+
+		log_err("No FPGA devices available.\n");
+		return FPGA_FAIL;
 	}
 
 	if (devnum == FPGA_INVALID_DEVICE) {
@@ -399,8 +418,7 @@ int fpga_compatible2flag(int devnum, const char *compatible)
 
 	switch (desc->devtype) {
 #if defined(CONFIG_FPGA_XILINX)
-	case fpga_xilinx:
-	{
+	case fpga_xilinx: {
 		xilinx_desc *xdesc = (xilinx_desc *)desc->devdesc;
 
 		if (xdesc->operations && xdesc->operations->str2flag)
