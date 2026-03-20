@@ -54,7 +54,7 @@ int fpga_uclass_info(struct udevice *dev)
 	const struct fpga_ops *ops = fpga_get_ops(dev);
 
 	if (!ops || !ops->info)
-		return -ENOSYS;
+		return 0;
 
 	return ops->info(dev);
 }
@@ -70,6 +70,6 @@ int fpga_uclass_compatible2flag(struct udevice *dev, const char *str)
 }
 
 UCLASS_DRIVER(fpga) = {
-	.name	= "fpga",
-	.id	= UCLASS_FPGA,
+	.name = "fpga",
+	.id = UCLASS_FPGA,
 };
