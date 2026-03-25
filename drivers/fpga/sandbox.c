@@ -12,8 +12,8 @@ struct sandbox_fpga_priv {
 	size_t last_bsize;
 };
 
-static int sandbox_fpga_load(struct udevice *dev, const void *buf,
-			     size_t bsize, bitstream_type bstype, int flags)
+static int sandbox_fpga_load(struct udevice *dev, const void *buf, size_t bsize,
+			     bitstream_type bstype, int flags)
 {
 	struct sandbox_fpga_priv *priv = dev_get_priv(dev);
 
@@ -30,8 +30,20 @@ static int sandbox_fpga_info(struct udevice *dev)
 	return 0;
 }
 
+static int sandbox_fpga_dump(struct udevice *dev, const void *buf, size_t bsize)
+{
+	struct sandbox_fpga_priv *priv = dev_get_priv(dev);
+
+	log_debug("%s: dumping %zu bytes\n", dev->name, bsize);
+	if (priv->last_buf && priv->last_bsize <= bsize)
+		memcpy((void *)buf, priv->last_buf, priv->last_bsize);
+
+	return 0;
+}
+
 static const struct fpga_ops sandbox_fpga_ops = {
 	.load = sandbox_fpga_load,
+	.dump = sandbox_fpga_dump,
 	.info = sandbox_fpga_info,
 };
 
@@ -41,9 +53,9 @@ static const struct udevice_id sandbox_fpga_match[] = {
 };
 
 U_BOOT_DRIVER(sandbox_fpga) = {
-	.name		= "sandbox_fpga",
-	.id		= UCLASS_FPGA,
-	.of_match	= sandbox_fpga_match,
-	.priv_auto	= sizeof(struct sandbox_fpga_priv),
-	.ops		= &sandbox_fpga_ops,
+	.name = "sandbox_fpga",
+	.id = UCLASS_FPGA,
+	.of_match = sandbox_fpga_match,
+	.priv_auto = sizeof(struct sandbox_fpga_priv),
+	.ops = &sandbox_fpga_ops,
 };
