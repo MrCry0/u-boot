@@ -113,9 +113,8 @@ int fpga_count(void)
 		struct udevice *dev;
 		int count = 0;
 
-		if (!uclass_get(UCLASS_FPGA, &uc)) {
+		if (!uclass_get(UCLASS_FPGA, &uc))
 			uclass_foreach_dev(dev, uc) count++;
-		}
 		if (count)
 			return count;
 	}
