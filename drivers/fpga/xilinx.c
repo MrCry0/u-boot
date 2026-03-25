@@ -31,7 +31,7 @@
 struct xilinx_fpga_priv {
 	xilinx_desc desc;
 };
-#endif
+#endif /* CONFIG_IS_ENABLED(DM_FPGA) */
 
 /* Local Static Functions */
 static int xilinx_validate(xilinx_desc *desc, char *fn);
