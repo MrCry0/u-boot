@@ -405,6 +405,13 @@ static int xilinx_dm_compatible2flag(struct udevice *dev, const char *str)
 }
 #endif
 
+
+static int xilinx_fpga_remove(struct udevice *dev)
+{
+	/* No cleanup needed for xilinx_desc */
+	return 0;
+}
+
 static const struct fpga_ops xilinx_fpga_ops = {
 	.load		= xilinx_dm_load,
 #if CONFIG_IS_ENABLED(FPGA_LOAD_SECURE)
@@ -491,6 +498,7 @@ U_BOOT_DRIVER(xilinx_fpga) = {
 	.name		= "xilinx_fpga",
 	.id		= UCLASS_FPGA,
 	.of_match	= xilinx_fpga_match,
+	.remove		= xilinx_fpga_remove,
 	.of_to_plat	= xilinx_fpga_of_to_plat,
 	.probe		= xilinx_fpga_probe,
 	.priv_auto	= sizeof(struct xilinx_fpga_priv),
