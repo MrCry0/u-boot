@@ -24,6 +24,33 @@ PREFIX_SIMPLE = '_u_boot_list_2_evspy_info_simple_2_'
 RE_EVTYPE_FULL = re.compile('%s(.*)_3_.*' % PREFIX_FULL)
 RE_EVTYPE_SIMPLE = re.compile('%s(.*)_3_.*' % PREFIX_SIMPLE)
 
+# Cache for nm --line-numbers output, keyed by ELF filename
+_nm_line_cache = {}
+
+
+def _nm_line_lookup(fname, func_name):
+    """Return 'file:line' for func_name via nm --line-numbers.
+
+    addr2line fails with ':?' on DWARF 5 + LTO binaries because its linear
+    CU scan does not walk .debug_rnglists.  nm resolves the location via the
+    symbol's own DWARF DIE and is not affected by this limitation.
+    """
+    if fname not in _nm_line_cache:
+        cache = {}
+        try:
+            out = tools.run('nm', '--line-numbers', fname)
+            for line in out.splitlines():
+                tab = line.find('\t')
+                if tab < 0:
+                    continue
+                parts = line[:tab].split()
+                if len(parts) >= 3:
+                    cache[parts[2]] = line[tab + 1:].strip()
+        except Exception:
+            pass
+        _nm_line_cache[fname] = cache
+    return _nm_line_cache[fname].get(func_name)
+
 def show_sym(fname, data, endian, evtype, sym):
     """Show information about an evspy entry
 
@@ -77,6 +104,10 @@ def show_sym(fname, data, endian, evtype, sym):
     # Find the file/line for the function
     cmd = ['addr2line', '-e', fname, '%x' % func_addr]
     out = tools.run(*cmd).strip()
+    if out == ':?' and func_name:
+        nm_out = _nm_line_lookup(fname, func_name)
+        if nm_out:
+            out = nm_out
 
     # Drop the full path if it is the current directory
     if out.startswith(src_path):
